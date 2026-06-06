@@ -1,15 +1,22 @@
 import httpx
 import chromadb
+from chromadb import Collection
 from supabase import Client, create_client
 
 from app.config import settings
 
-supabase: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+sb: Client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+supabase = sb
 
 chroma_client = chromadb.PersistentClient(path=settings.resolved_chroma_path)
 
+CHROMA_COLLECTION = "research_chunks"
 
-_SCHEMA_TABLES = ("papers", "notes")
+_SCHEMA_TABLES = ("papers", "notes", "documents", "chunks")
+
+
+def get_collection() -> Collection:
+    return chroma_client.get_or_create_collection(CHROMA_COLLECTION)
 
 
 def list_supabase_tables() -> list[str]:
@@ -25,7 +32,7 @@ def list_supabase_tables() -> list[str]:
     postgrest_reachable = False
     for table in _SCHEMA_TABLES:
         try:
-            supabase.table(table).select("id", count="exact").limit(0).execute()
+            sb.table(table).select("id", count="exact").limit(0).execute()
             postgrest_reachable = True
             found.append(table)
         except Exception as exc:
@@ -55,3 +62,19 @@ def verify_chroma() -> tuple[bool, str]:
         return True, f"{count} collection(s)"
     except Exception as exc:
         return False, str(exc)
+
+
+def check_supabase_health() -> str:
+    try:
+        sb.table("documents").select("id").limit(1).execute()
+        return "ok"
+    except Exception:
+        return "error"
+
+
+def check_chroma_health() -> str:
+    try:
+        chroma_client.list_collections()
+        return "ok"
+    except Exception:
+        return "error"
