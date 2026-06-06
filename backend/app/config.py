@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     SUPABASE_URL: str
     SUPABASE_KEY: str
-    ANTHROPIC_API_KEY: str
+    GEMINI_API_KEY: str = "AIzaSyBj_fZjIrbZPcWooWs0lidQsIfRHTBfVwA"
     CHROMA_PATH: str = "./chroma_db"
 
     @property

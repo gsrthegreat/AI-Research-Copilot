@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import check_chroma_health, check_supabase_health, verify_chroma, verify_supabase
 from app.routers import router
+from app.routers.chat import router as chat_router
 from app.routers.ingest import router as ingest_router
 
 
@@ -24,6 +25,7 @@ def _print_startup_banner(
         print(f"             tables: {table_list}")
     print(f"  ChromaDB:  {ok if chroma_ok else fail}  ({chroma_info})")
     print(f"  Health:    GET /health")
+    print(f"  Docs:      GET /docs")
     print("=" * width)
     print()
 
@@ -53,6 +55,7 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(ingest_router, prefix="/api/v1", tags=["ingest"])
+app.include_router(chat_router, prefix="/api/v1", tags=["chat"])
 
 
 @app.get("/health")
